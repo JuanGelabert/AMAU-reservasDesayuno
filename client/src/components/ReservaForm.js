@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import Swal from 'sweetalert2';
+import { getTranslation } from '../i18n/i18n'
 
 const sanitizarTexto = (str) => {
     return str
@@ -11,10 +12,16 @@ const sanitizarTexto = (str) => {
         .toLowerCase(); // Convertir a minuscula
 }
 
+const detectarIdiomaNavegador = () => {
+    const lang = navigator.language || navigator.userLanguage
+    return lang.substring(0, 2)
+}
+
 function ReservaForm() {
     const [bloquear, setBloquear] = useState(false);
     const [disponibilidad, setDisponibilidad] = useState({});
     const [defaultTurno, setDefaultTurno] = useState('7:00');
+    const [idioma, setIdioma] = useState(detectarIdiomaNavegador())
     const [initialValues, setInitialValues] = useState({
         habitacion: '',
         nombre: '',
@@ -25,6 +32,7 @@ function ReservaForm() {
         menuVegano: false,
         comentarios: ''
     })
+    const traducciones = getTranslation(idioma)
 
     useEffect(() => {
         // Consulta si el formulario se encuentra bloqueado por admin
@@ -158,7 +166,7 @@ function ReservaForm() {
 
     return (
         <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-4">Reservar Turno</h2>
+            <h2 className="text-2xl font-bold mb-4">{traducciones.titulo}</h2>
             <Formik
                 initialValues={initialValues}
                 enableReinitialize
@@ -168,27 +176,27 @@ function ReservaForm() {
                 {({ isSubmitting, setFieldValue, values }) => (
                     <Form className="space-y-4">
                         <div>
-                            <label className="block text-gray-700">Habitación:</label>
+                            <label className="block text-gray-700">{traducciones.habitacion}:</label>
                             <Field type="number" name="habitacion" className="w-full p-2 border rounded" />
                             <ErrorMessage name="habitacion" component="div" className="text-red-500" />
                         </div>
                         <div>
-                            <label className="block text-gray-700">Nombre:</label>
+                            <label className="block text-gray-700">{traducciones.nombre}:</label>
                             <Field type="text" name="nombre" autocomplete='given-name' className="w-full p-2 border rounded" />
                             <ErrorMessage name="nombre" component="div" className="text-red-500" />
                         </div>
                         <div>
-                            <label className="block text-gray-700">Apellido:</label>
+                            <label className="block text-gray-700">{traducciones.apellido}:</label>
                             <Field type="text" name="apellido" autocomplete='family-name' className="w-full p-2 border rounded" />
                             <ErrorMessage name="apellido" component="div" className="text-red-500" />
                         </div>
                         <div>
-                            <label className="block text-gray-700">Fecha:</label>
+                            <label className="block text-gray-700">{traducciones.fecha}:</label>
                             <Field type="date" name="fecha" className="w-full p-2 border rounded" onChange={(e) => handleFechaChange(e, setFieldValue)} />
                             <ErrorMessage name="fecha" component="div" className="text-red-500" />
                         </div>
                         <div>
-                            <label className="block text-gray-700">Turno:</label>
+                            <label className="block text-gray-700">{traducciones.turno}:</label>
                             <Field as="select" name="turno" className="w-full p-2 border rounded">
                                 {values.fecha && sortedHorarios.map(horario => (
                                     <option key={horario} value={horario} disabled={disponibilidad[horario] <= 0}>
@@ -202,16 +210,16 @@ function ReservaForm() {
                             <label className="block text-gray-700">Menú:</label>
                             <div className="flex items-center">
                                 <Field type="checkbox" name="menuSinTacc" className="mr-2" />
-                                <label className="mr-4">Sin Tacc</label>
+                                <label className="mr-4">{traducciones.menuSinTacc}</label>
                                 <Field type="checkbox" name="menuVegano" className="mr-2" />
-                                <label>Vegano</label>
+                                <label>{traducciones.menuVegano}</label>
                             </div>
                         </div>
                         <div>
-                            <label className="block text-gray-700">Comentarios:</label>
+                            <label className="block text-gray-700">{traducciones.comentarios}:</label>
                             <Field type="text" name="comentarios" className="w-full p-2 border rounded" />
                         </div>
-                        <button type="submit" disabled={isSubmitting} className="w-full bg-blue-500 text-white p-2 rounded">Reservar</button>
+                        <button type="submit" disabled={isSubmitting} className="w-full bg-blue-500 text-white p-2 rounded">{traducciones.enviar}</button>
                     </Form>
                 )}
             </Formik>
