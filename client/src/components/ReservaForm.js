@@ -92,15 +92,21 @@ function ReservaForm() {
 
         axios.post('http://localhost:3000/api/reservar', data)
             .then(response => {
-                if (response.data.message === 'La habitación no está ocupada por la persona indicada.') {
-                    setFieldError('habitacion', 'La habitación y el huésped no coinciden.');
+                if (response.data.message === 'Los grupos tienen horarios preestablecidos para el desayuno. Por favor, consulte con el coordinador del grupo.') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Reserva no permitida',
+                        text: response.data.message
+                    });
+                } else if (response.data.message === 'La habitación no está ocupada por la persona indicada.') {
+                    setFieldError('habitacion', 'No se encuentra el huésped en la habitación indicada.');
                     Swal.fire('Error', 'La habitación y el huésped no coinciden.', 'error');
                 } else if (response.data.message === 'Ya tienes una reserva para esta fecha.') {
                     const horarioReservado = response.data.reserva.turno;
                     Swal.fire({
+                        icon: 'warning',
                         title: 'Reserva Existente',
                         text: `Ya tienes una reserva para este día a las ${horarioReservado}. ¿Deseas modificarla?`,
-                        icon: 'warning',
                         showCancelButton: true,
                         confirmButtonText: 'Sí, modificar',
                         cancelButtonText: 'No'

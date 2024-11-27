@@ -1,13 +1,19 @@
 const Reserva = require('../models/Reserva');
 const { validarHuesped, validarReservaExistente } = require('../services/validaciones');
 
-exports.crearOActualizarReserva = async (req, res) => {
+exports.crearReserva = async (req, res) => {
     const { habitacion, nombre, apellido, fecha, turno, menu, comentarios } = req.body;
 
     // Validar huésped en la colección `huespedes`
     const huespedValido = await validarHuesped(habitacion, nombre, apellido);
     if (!huespedValido) {
         return res.status(400).send({ message: 'La habitación no está ocupada por la persona indicada.' });
+    }
+
+    // Verifica si el huésped pertenece a un grupo
+    const huesped = await Huesped.findOne({ habitacion, nombre, apellido });
+    if (huesped && huesped.grupo) {
+        return res.status(400).send({ message: 'Los grupos tienen horarios preestablecidos para el desayuno. Por favor, consulte con el coordinador del grupo.' });
     }
 
     // Verificar si ya existe una reserva para la fecha seleccionada
