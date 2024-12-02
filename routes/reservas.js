@@ -1,12 +1,12 @@
 const express = require('express');
-const { crearOActualizarReserva, modificarReserva, generarReporte } = require('../controllers/reservasController');
+const { crearReserva, modificarReserva, generarReporte } = require('../controllers/reservasController');
 const { validarDisponibilidad } = require('../services/validaciones');
 
 const router = express.Router();
 let bloqueo = {bloquear: false}
 
 //Crear Reserva
-router.post('/reservar', crearOActualizarReserva);
+router.post('/reservar', crearReserva);
 
 // Modificar Reserva
 router.put('/reservar/:id', modificarReserva);

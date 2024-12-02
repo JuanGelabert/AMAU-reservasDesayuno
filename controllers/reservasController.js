@@ -1,7 +1,7 @@
 const Reserva = require('../models/Reserva');
 const { validarHuesped, validarReservaExistente } = require('../services/validaciones');
 
-exports.crearOActualizarReserva = async (req, res) => {
+exports.crearReserva = async (req, res) => {
     const { habitacion, nombre, apellido, fecha, turno, menu, comentarios } = req.body;
 
     // Validar huésped en la colección `huespedes`
@@ -10,7 +10,7 @@ exports.crearOActualizarReserva = async (req, res) => {
         return res.status(400).send({ message: 'La habitación no está ocupada por la persona indicada.' });
     }
 
-    // Verificar si ya existe una reserva para la fecha seleccionada
+     // Verificar si ya existe una reserva para la fecha seleccionada
     const reservaExistente = await validarReservaExistente(habitacion, nombre, apellido, fecha);
     if (reservaExistente) {
         return res.status(200).send({
