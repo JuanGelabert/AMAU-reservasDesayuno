@@ -10,13 +10,7 @@ exports.crearReserva = async (req, res) => {
         return res.status(400).send({ message: 'La habitación no está ocupada por la persona indicada.' });
     }
 
-    // Verifica si el huésped pertenece a un grupo
-    const huesped = await Huesped.findOne({ habitacion, nombre, apellido });
-    if (huesped && huesped.grupo) {
-        return res.status(400).send({ message: 'Los grupos tienen horarios preestablecidos para el desayuno. Por favor, consulte con el coordinador del grupo.' });
-    }
-
-    // Verificar si ya existe una reserva para la fecha seleccionada
+     // Verificar si ya existe una reserva para la fecha seleccionada
     const reservaExistente = await validarReservaExistente(habitacion, nombre, apellido, fecha);
     if (reservaExistente) {
         return res.status(200).send({
