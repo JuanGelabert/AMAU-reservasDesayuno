@@ -21,7 +21,8 @@ function ReservaForm() {
     const [bloquear, setBloquear] = useState(false);
     const [disponibilidad, setDisponibilidad] = useState({});
     const [defaultTurno, setDefaultTurno] = useState('7:00');
-    const [idioma, setIdioma] = useState(detectarIdiomaNavegador())
+    const idioma = detectarIdiomaNavegador()
+    const traducciones = getTranslation(idioma)
     const [initialValues, setInitialValues] = useState({
         habitacion: '',
         nombre: '',
@@ -32,7 +33,6 @@ function ReservaForm() {
         menuVegano: false,
         comentarios: ''
     })
-    const traducciones = getTranslation(idioma)
 
     useEffect(() => {
         // Consulta si el formulario se encuentra bloqueado por admin
