@@ -1,6 +1,13 @@
 const Reserva = require('../models/Reserva');
 const { validarHuesped, validarReservaExistente } = require('../services/validaciones');
 
+const sanitizarTexto = (str) => {
+    return str
+        .normalize("NFD") // Normalizan para separar diacríticos
+        .replace(/[\u0300-\u036f]/g, "") // Remover diacríticos
+        .toLowerCase(); // Convertir a minúscula
+};
+
 exports.crearReserva = async (req, res) => {
     const { habitacion, nombre, apellido, fecha, turno, menu, comentarios } = req.body;
 
@@ -52,6 +59,30 @@ exports.modificarReserva = async (req, res) => {
         res.status(500).send({ message: 'Error al modificar la reserva', error });
     }
 };
+
+// Consultar reserva
+exports.consultarReserva = async (req, res) => {
+    try {
+        const { habitacion, apellido, fecha } = req.query;
+        const query = {};
+        if (habitacion) query.habitacion = habitacion;
+        if (apellido) query.apellido = new RegExp(normalizarCadena(apellido), 'i');
+        if (fecha) {
+            const fechaInicio = new Date(new Date(fecha).setUTCHours(0, 0, 0, 0));
+            const fechaFin = new Date(new Date(fecha).setUTCHours(23, 59, 59, 999));
+            query.fecha = { $gte: fechaInicio, $lte: fechaFin };
+        } else {
+            query.fecha = { $gte: new Date() }; // Solo futuras reservas si no se proporciona fecha
+        }
+
+        const reservas = await Reserva.find().where(query).sort({ fecha: 1 });
+        res.json({ reservas });
+        
+    } catch (error) {
+        console.error('Error al obtener reservas:', error);
+        res.status(500).send('Error al obtener reservas');
+    }
+}
 
 // Generar Reporte
 exports.generarReporte = async (req, res) => {

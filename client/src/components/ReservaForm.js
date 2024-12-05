@@ -39,25 +39,25 @@ function ReservaForm() {
         axios.get('http://localhost:3000/api/bloqueo')
             .then(response => {
                 setBloquear(response.data.bloquear);
-            })
-            .catch(error => {
+            }).catch(error => {
                 console.error('Error fetching bloqueo:', error);
             });
-        
-        // Recupera datos desde Local Sotrage
-        const localData = localStorage.getItem('formData')
+    }, []);
+
+    useEffect(() => {
+        // Recupera datos desde Local Storage
+        const localData = localStorage.getItem('formData');
         if (localData) {
-            const formData = JSON.parse(localData)
-            setInitialValues({
-                ...initialValues,
+            const formData = JSON.parse(localData);
+            setInitialValues(prevValues => ({
+                ...prevValues,
                 nombre: formData.nombre,
                 apellido: formData.apellido,
                 menuSinTacc: formData.menuSinTacc,
                 menuVegano: formData.menuVegano,
-            })
+            }));
         }
-    }, [initialValues]);
-
+    }, []);
 
     const validationSchema = Yup.object().shape({
         habitacion: Yup.number().required('La habitación es requerida'),
@@ -182,12 +182,12 @@ function ReservaForm() {
                         </div>
                         <div>
                             <label className="block text-gray-700">{traducciones.nombre}:</label>
-                            <Field type="text" name="nombre" autocomplete='given-name' className="w-full p-2 border rounded" />
+                            <Field type="text" name="nombre" autoComplete='given-name' className="w-full p-2 border rounded" />
                             <ErrorMessage name="nombre" component="div" className="text-red-500" />
                         </div>
                         <div>
                             <label className="block text-gray-700">{traducciones.apellido}:</label>
-                            <Field type="text" name="apellido" autocomplete='family-name' className="w-full p-2 border rounded" />
+                            <Field type="text" name="apellido" autoComplete='family-name' className="w-full p-2 border rounded" />
                             <ErrorMessage name="apellido" component="div" className="text-red-500" />
                         </div>
                         <div>
