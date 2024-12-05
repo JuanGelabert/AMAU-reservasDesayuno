@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors())
 app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
 app.use('/api', reservaRoutes);
 
 app.listen(PORT, () => {
