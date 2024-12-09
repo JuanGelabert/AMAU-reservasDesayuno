@@ -165,65 +165,82 @@ function ReservaForm() {
     });
 
     return (
-        <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-4">{traducciones.titulo}</h2>
-            <Formik
-                initialValues={initialValues}
-                enableReinitialize
-                validationSchema={validationSchema}
-                onSubmit={handleSubmit}
-            >
-                {({ isSubmitting, setFieldValue, values }) => (
-                    <Form className="space-y-4">
-                        <div>
-                            <label className="block text-gray-700">{traducciones.habitacion}:</label>
-                            <Field type="number" name="habitacion" className="w-full p-2 border rounded" />
-                            <ErrorMessage name="habitacion" component="div" className="text-red-500" />
-                        </div>
-                        <div>
-                            <label className="block text-gray-700">{traducciones.nombre}:</label>
-                            <Field type="text" name="nombre" autoComplete='given-name' className="w-full p-2 border rounded" />
-                            <ErrorMessage name="nombre" component="div" className="text-red-500" />
-                        </div>
-                        <div>
-                            <label className="block text-gray-700">{traducciones.apellido}:</label>
-                            <Field type="text" name="apellido" autoComplete='family-name' className="w-full p-2 border rounded" />
-                            <ErrorMessage name="apellido" component="div" className="text-red-500" />
-                        </div>
-                        <div>
-                            <label className="block text-gray-700">{traducciones.fecha}:</label>
-                            <Field type="date" name="fecha" className="w-full p-2 border rounded" onChange={(e) => handleFechaChange(e, setFieldValue)} />
-                            <ErrorMessage name="fecha" component="div" className="text-red-500" />
-                        </div>
-                        <div>
-                            <label className="block text-gray-700">{traducciones.turno}:</label>
-                            <Field as="select" name="turno" className="w-full p-2 border rounded">
-                                {values.fecha && sortedHorarios.map(horario => (
-                                    <option key={horario} value={horario} disabled={disponibilidad[horario] <= 0}>
-                                        {horario} ({disponibilidad[horario]} disponibles)
-                                    </option>
-                                ))}
-                            </Field>
-                            <ErrorMessage name="turno" component="div" className="text-red-500" />
-                        </div>
-                        <div>
-                            <label className="block text-gray-700">Menú:</label>
-                            <div className="flex items-center">
-                                <Field type="checkbox" name="menuSinTacc" className="mr-2" />
-                                <label className="mr-4">{traducciones.menuSinTacc}</label>
-                                <Field type="checkbox" name="menuVegano" className="mr-2" />
-                                <label>{traducciones.menuVegano}</label>
+        <>
+            <div className='text-center'>
+                <h2 className='font-semibold text-lg mb-4'>¡Bienvenidos al Hotel AMAU!</h2>
+                <p>
+                    Asegúrese de completar el siguiente formulario para reservar el turno de los desayunos durante su estadía.<br />
+                    Recuerde que el servicio se brinda en intervalos de 45 minutos y los horarios son los siguientes:
+                </p>
+                <br />
+                <ul>
+                    <li><strong>Lunes a Viernes:</strong> 7:00 | 8:00 | 9:00 am</li>
+                    <li><strong>Sábados y Domingos:</strong> 8:00 | 9:00 | 10:00 am</li>
+                </ul>
+                <br />
+                <p>En caso de necesitar un turno extra puede solicitarlo en recepción.</p>
+                <p className='font-semibold italic'>Gracias por elegirnos, ¡esperamos que disfrute de su estadía!</p>
+            </div>
+            <div className="max-w-md mx-auto mt-5 p-6 bg-[#FAFAFA] rounded-lg shadow-md">
+                <h2 className="text-2xl text-center font-bold mb-4">{traducciones.titulo}</h2>
+                <Formik
+                    initialValues={initialValues}
+                    enableReinitialize
+                    validationSchema={validationSchema}
+                    onSubmit={handleSubmit}
+                >
+                    {({ isSubmitting, setFieldValue, values }) => (
+                        <Form className="space-y-4">
+                            <div>
+                                <label className="block font-semibold text-gray-700">{traducciones.habitacion}:</label>
+                                <Field type="number" name="habitacion" className="w-full p-2 border rounded" />
+                                <ErrorMessage name="habitacion" component="div" className="text-red-500" />
                             </div>
-                        </div>
-                        <div>
-                            <label className="block text-gray-700">{traducciones.comentarios}:</label>
-                            <Field type="text" name="comentarios" className="w-full p-2 border rounded" />
-                        </div>
-                        <button type="submit" disabled={isSubmitting} className="w-full bg-blue-500 text-white p-2 rounded">{traducciones.enviar}</button>
-                    </Form>
-                )}
-            </Formik>
-        </div>
+                            <div>
+                                <label className="block font-semibold text-gray-700">{traducciones.nombre}:</label>
+                                <Field type="text" name="nombre" autoComplete='given-name' className="w-full p-2 border rounded" />
+                                <ErrorMessage name="nombre" component="div" className="text-red-500" />
+                            </div>
+                            <div>
+                                <label className="block font-semibold text-gray-700">{traducciones.apellido}:</label>
+                                <Field type="text" name="apellido" autoComplete='family-name' className="w-full p-2 border rounded" />
+                                <ErrorMessage name="apellido" component="div" className="text-red-500" />
+                            </div>
+                            <div>
+                                <label className="block font-semibold text-gray-700">{traducciones.fecha}:</label>
+                                <Field type="date" name="fecha" className="w-full p-2 border rounded" onChange={(e) => handleFechaChange(e, setFieldValue)} />
+                                <ErrorMessage name="fecha" component="div" className="text-red-500" />
+                            </div>
+                            <div>
+                                <label className="block font-semibold text-gray-700">{traducciones.turno}:</label>
+                                <Field as="select" name="turno" className="w-full p-2 border rounded">
+                                    {values.fecha && sortedHorarios.map(horario => (
+                                        <option key={horario} value={horario} disabled={disponibilidad[horario] <= 0}>
+                                            {horario} ({disponibilidad[horario]} disponibles)
+                                        </option>
+                                    ))}
+                                </Field>
+                                <ErrorMessage name="turno" component="div" className="text-red-500" />
+                            </div>
+                            <div>
+                                <label className="block font-semibold text-gray-700">Menú:</label>
+                                <div className="flex items-center font-semibold ">
+                                    <Field type="checkbox" name="menuSinTacc" className="mr-2" />
+                                    <label className="mr-4">{traducciones.menuSinTacc}</label>
+                                    <Field type="checkbox" name="menuVegano" className="mr-2" />
+                                    <label>{traducciones.menuVegano}</label>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block font-semibold text-gray-700">{traducciones.comentarios}:</label>
+                                <Field type="text" name="comentarios" className="w-full h-28 p-2 border rounded" />
+                            </div>
+                            <button type="submit" disabled={isSubmitting} className="w-full bg-blue-500 text-white p-2 rounded">{traducciones.enviar}</button>
+                        </Form>
+                    )}
+                </Formik>
+            </div>
+        </>
     );
 }
 
