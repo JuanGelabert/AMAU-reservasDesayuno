@@ -1,10 +1,17 @@
 const express = require('express');
-const { crearReserva, modificarReserva,consultarReserva, generarReporte } = require('../controllers/reservasController');
+const multer = require('multer');
+const { crearReserva, modificarReserva, consultarReserva, reservarGrupo, generarReporte } = require('../controllers/reservasController');
 const { validarDisponibilidad } = require('../services/validaciones');
 const router = express.Router();
-let bloqueo = {bloquear: false}
+let bloqueo = { bloquear: false }
 
-//Crear Reserva
+//Configuración de Multer para guardar archivos
+const upload = multer({ dest: 'uploads/'})
+
+// Subir Archivo de Grupos
+router.post('/upload', upload.single('file'), reservarGrupo)
+
+// Crear Reserva
 router.post('/reservar', crearReserva);
 
 // Modificar Reserva
@@ -17,7 +24,7 @@ router.get('/reservas', consultarReserva);
 router.get('/reporte', generarReporte);
 
 // Validar Disponibilidad
-router.get('/disponibilidad', validarDisponibilidad)
+router.get('/disponibilidad', validarDisponibilidad);
 
 // Bloquear app
 router.get('/bloqueo', (req, res) => {

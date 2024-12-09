@@ -1,61 +1,100 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import ReporteTurno from './ReporteTurno'
+import moment from 'moment';
+import 'moment/locale/es';
+import ReporteTurno from './ReporteTurno';
+import './styles.css'; // Importar el archivo de estilos
 
-function ReporteDiario() {
+const ReporteDiario = () => {
   const [fecha, setFecha] = useState('');
-  const [totalesDia, setTotalesDia] = useState(null);
-  const [reporte, setReporte] = useState([]);
+  const [resumen, setResumen] = useState({
+    totalReservas: 0,
+    totalSinTacc: 0,
+    totalVegano: 0
+  });
+  const [turnos, setTurnos] = useState([]);
 
+  // Maneja el cambio en el campo de fecha
   const handleChangeFecha = (event) => {
     setFecha(event.target.value);
   };
 
-  const handleReporte = (event) => {
+  // Maneja la generación del reporte diario
+  const handleGenerarReporte = (event) => {
     event.preventDefault();
-    axios.get(`http://localhost:3000/api/reporte?fecha=${fecha}`)
+
+    axios.get(`http://localhost:3000/api/reservas?fecha=${fecha}`)
       .then(response => {
-        setTotalesDia(response.data.totalesDia);
-        setReporte(response.data.reporte);
+        moment.locale('es');
+        const reservas = response.data.reservas.map(reserva => ({
+          ...reserva,
+          fecha: moment(reserva.fecha).format('ddd DD/MM/YYYY').replace('.', '').replace(/^\w/, c => c.toUpperCase())
+        }));
+
+        const totalReservas = reservas.length;
+        const totalSinTacc = reservas.filter(reserva => reserva.menu.toLowerCase().includes('sin tacc')).length;
+        const totalVegano = reservas.filter(reserva => reserva.menu.toLowerCase().includes('vegano')).length;
+
+        setResumen({
+          totalReservas,
+          totalSinTacc,
+          totalVegano
+        });
+
+        // Agrupar reservas por turnos
+        const turnosAgrupados = reservas.reduce((acc, reserva) => {
+          if (!acc[reserva.turno]) {
+            acc[reserva.turno] = [];
+          }
+          acc[reserva.turno].push(reserva);
+          return acc;
+        }, {});
+
+        // Convertir a array de turnos
+        const turnosArray = Object.keys(turnosAgrupados).map(turno => ({
+          turno,
+          reservas: turnosAgrupados[turno]
+        }));
+
+        setTurnos(turnosArray);
       })
       .catch(error => {
-        console.error('Error fetching reporte:', error);
+        console.error('Error fetching reservas:', error);
       });
   };
 
   return (
-    <div className="mb-6">
-      <h3 className="text-xl font-semibold mb-2">Reporte Diario</h3>
-      <form onSubmit={handleReporte} className="space-y-4">
-        <div>
-          <label className="block text-gray-700">Fecha:</label>
-          <input type="date" value={fecha} onChange={handleChangeFecha} required className="w-full p-2 border rounded" />
+    <div className="container">
+      <h2 className="title text-center">Reporte diario</h2>
+      <form onSubmit={handleGenerarReporte} className="space-y-2">
+        <div className='my-9'>
+          <label className="block text-gray-700 font-semibold">Fecha:</label>
+          <input type="date" value={fecha} onChange={handleChangeFecha} className="w-full p-2 border rounded" />
         </div>
-        <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded">Generar Reporte</button>
+        <button type="submit" className="btn">Generar Reporte</button>
       </form>
-      
-      {totalesDia && (
-        <div className="text-justify mt-6">
-          <h3 className="text-xl text-center font-semibold mb-2">Reporte del Día</h3>
-          <div className="flex flex-col gap-2 md:flex-row justify-center md:space-x-10">
-            <p><strong>Total Reservas: </strong> {totalesDia.totalReservas}</p>
-            <p><strong>Total Sin TACC: </strong> {totalesDia.totalSinTacc}</p>
-            <p><strong>Total Vegano: </strong> {totalesDia.totalVegano}</p>
-          </div>
+
+      {resumen.totalReservas > 0 && (
+        <div className="mt-6">
+          <h3 className="text-xl font-semibold mb-2">Reporte del Día</h3>
+          <p><strong>Total Reservas:</strong> {resumen.totalReservas}</p>
+          <p><strong>Total Sin TACC:</strong> {resumen.totalSinTacc}</p>
+          <p><strong>Total Vegano:</strong> {resumen.totalVegano}</p>
         </div>
       )}
-      {reporte.length > 0 && (
+
+      {turnos.length > 0 && (
         <div className="mt-6">
           <h3 className="text-xl font-semibold mb-2">Reporte por Turnos</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {reporte.map((turno, index) => (
-              <ReporteTurno key={index} turno={turno} />
+          <div className="grid grid-cols-1 gap-4">
+            {turnos.map((turnoData, index) => (
+              <ReporteTurno key={index} turnoData={turnoData} />
             ))}
           </div>
         </div>
       )}
     </div>
   );
-}
+};
 
 export default ReporteDiario;

@@ -1,5 +1,6 @@
 const Huesped = require('../models/Huesped');
 const Reserva = require('../models/Reserva');
+const axios = require('axios');
 
 // Función para sanitizar los textos y comparar de manera correcta
 const sanitizarTexto = (str) => {
@@ -72,21 +73,25 @@ async function validarDisponibilidad(req, res) {
     }
 }
 
-// // Función para validar huésped con la API de Cloudbeds
-// async function validarHuesped(habitacion, nombre, apellido) {
-//     try {
-//         const response = await axios.get(`https://api.cloudbeds.com/v1/room/${habitacion}`, {
-//             headers: { 'Authorization': `Bearer ${process.env.CLOUDBEDS_API_TOKEN}` }
-//         });
-//         const huespedes = response.data.huespedes;
-//         return huespedes.some(huesped => huesped.nombre === nombre && huesped.apellido === apellido);
-//     } catch (error) {
-//         console.error('Error al validar huésped con Cloudbeds:', error);
-//         return false;
-//     }
-// }
+// Función para validar huésped con la API de Cloudbeds
+async function validarHuespedCB(habitacion, nombre, apellido) {
+    console.log(process.env.CLOUDBEDS_API_TOKEN);
+    try {
+        const response = await axios.get(`https://api.cloudbeds.com/v1/room/${habitacion}`, {
+            headers: { 'Authorization': `Bearer ${process.env.CLOUDBEDS_API_TOKEN}` }
+        });
+        const huespedes = response.data.huespedes;
+        console.log('Huespedes: ', huespedes)
+
+        return huespedes.some(huesped => huesped.nombre === nombre && huesped.apellido === apellido);
+    } catch (error) {
+        console.error('Error al validar huésped con Cloudbeds:', error);
+        return false;
+    }
+}
 
 module.exports = {
+    validarHuespedCB,
     validarHuesped,
     validarReservaExistente,
     validarDisponibilidad

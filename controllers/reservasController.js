@@ -1,5 +1,7 @@
+const fs = require('fs');
+const xlsx = require('xlsx');
 const Reserva = require('../models/Reserva');
-const { validarHuesped, validarReservaExistente } = require('../services/validaciones');
+const { validarHuesped, validarReservaExistente, validarHuespedCB } = require('../services/validaciones');
 
 const sanitizarTexto = (str) => {
     return str
@@ -83,6 +85,88 @@ exports.consultarReserva = async (req, res) => {
         res.status(500).send('Error al obtener reservas');
     }
 }
+
+// Reservas Grupales a partir de Excel
+exports.reservarGrupo = async (req, res) => {
+  try {
+    const file = req.file;
+    const workbook = xlsx.readFile(file.path);
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const data = xlsx.utils.sheet_to_json(sheet);
+
+    let lastHabitacion = null; // Variable para almacenar el último número de habitación válido
+
+    const reservas = await Promise.all(data.flatMap(async (row) => {
+      if (!row.Nombre || !row.Apellido || !row.Ingreso || !row.Salida || !row.Turno) {
+        console.error('Fila omitida debido a campos faltantes:', row);
+        return [];
+      }
+
+      if (row.Habitacion) {
+        lastHabitacion = row.Habitacion;
+      } else {
+        row.Habitacion = lastHabitacion;
+      }
+
+        const huespedValido = await validarHuesped(row.Habitacion, row.Nombre, row.Apellido)
+        if (!huespedValido) {
+            console.error('Huésped no encontrado o no está hospedado: ', row.Nombre, row.Apellido);
+            return []
+        }
+      
+        const ingreso = new Date((row.Ingreso - 25569) * 86400 * 1000); // Convertir desde el formato Excel
+        const salida = new Date((row.Salida - 25569) * 86400 * 1000); // Convertir desde el formato Excel 
+
+        const reservasDias = await Promise.all([...Array((salida - ingreso) / (1000 * 60 * 60 * 24) + 1).keys()].map(async i => {
+            const fecha = new Date(ingreso);
+            fecha.setDate(fecha.getDate() + i);
+
+            const menuText = (row.Menu || '').toLowerCase();
+            const menu = menuText.includes('celiaco') ||
+                menuText.includes('celiaca') ||
+                menuText.includes('sin tacc') ? 'Sin Tacc' :
+                menuText.includes('vegano') ||
+                    menuText.includes('vegana') ? 'Vegano' : '';
+            
+            // Comprobar si la reserva ya existe 
+            const reservaExistente = await Reserva.findOne({
+                habitacion: row.Habitacion,
+                nombre: row.Nombre,
+                apellido: row.Apellido,
+                fecha: fecha,
+            });
+            if (reservaExistente) {
+                console.log('Reserva ya existe para:', row.Nombre, row.Apellido, fecha);
+                return null;
+            }
+            
+            return {
+                habitacion: row.Habitacion,
+                nombre: row.Nombre,
+                apellido: row.Apellido,
+                fecha: fecha,
+                turno: row.Turno,
+                menu: menu
+            };
+        }));
+        
+        // Filtrar nulls antes de devolver
+        return reservasDias.filter(reserva => reserva);
+    }));
+      
+      if (reservas.length > 0) {
+          await Reserva.insertMany(reservas.flat());
+      }
+
+    fs.unlinkSync(file.path); // Eliminar el archivo después de procesarlo
+    res.status(200).json({ message: 'Reservas creadas exitosamente' });
+  } catch (error) {
+    console.error('Error al procesar archivo:', error);
+    res.status(500).json({ message: 'Error al procesar archivo' });
+  }
+};
+
 
 // Generar Reporte
 exports.generarReporte = async (req, res) => {
