@@ -1,6 +1,6 @@
-const Huesped = require('../models/Huesped');
+require('dotenv').config();
 const Reserva = require('../models/Reserva');
-const axios = require('axios');
+const { realizarSolicitud } = require('../config/cloudbeds');
 
 // Función para sanitizar los textos y comparar de manera correcta
 const sanitizarTexto = (str) => {
@@ -10,37 +10,58 @@ const sanitizarTexto = (str) => {
         .toLowerCase(); // Convertir a minuscula
 }
 
-// Validación de Huesped hospedado en habitación
-async function validarHuesped(habitacion, nombre, apellido) {
+/** 
+    * Valida si un huésped está alojado en una habitación en una fecha específica.
+    * @param {string} habitacion - Número de habitación.
+    * @param {string} nombre - Nombre del huésped.
+    * @param {string} apellido - Apellido del huésped. 
+    * @param {Date} fechaDesayuno - Fecha del desayuno.
+    * @returns {boolean} - Verdadero si el huésped está alojado y la fecha es válida, falso en caso contrario.
+ */
 
+async function validarHuesped(habitacion, nombre, apellido, fechaDesayuno) {
     try {
-        const sanitizedNombre = sanitizarTexto(nombre);
-        const sanitizedApellido = sanitizarTexto(apellido);
-        
-        // Obtener los huéspedes que están hospedados en la habitación
-        const huespedes = await Huesped.find({ habitacion, hospedado: true });
-        
-        // Para cada huésped encontrado, sanitizar nombre y apellido y guardarlo en una nueva variable
-        for (let huesped of huespedes) {
-            const storedNombre = sanitizarTexto(huesped.nombre);
-            const storedApellido = sanitizarTexto(huesped.apellido);
+        const endpoint = '/getReservations';
+        const params = {
+            roomName: habitacion,
+            status: "checked_in",
+            includeGuestsDetails: true
+        };
 
-            // Si la consulta coincide con alguno de los huespedes de la habitacion devuelve true
-            if (sanitizedNombre === storedNombre && sanitizedApellido === storedApellido) return true
-        }
+        // Consulta la reserva en Cloudbeds por habitación y status
+        const response = await realizarSolicitud(endpoint, params);
+        reservas = response.data
 
-        return false;
+        // En la reserva encontrada se validan habitacion, nombre, apellido y fecha
+        const huespedValido = reservas.some(reserva => {
+            return Object.values(reserva.guestList).some(guest => {
+                return sanitizarTexto(guest.guestFirstName) === sanitizarTexto(nombre) &&
+                    sanitizarTexto(guest.guestLastName) === sanitizarTexto(apellido) &&
+                    guest.roomName === habitacion &&
+                    new Date(reserva.startDate) < fechaDesayuno && fechaDesayuno <= new Date(reserva.endDate);
+            });
+        });
+
+        return huespedValido;
     } catch (error) {
+        console.error('Error al validar el huésped en Cloudbeds:', error.response?.data || error.message);
         return false;
     }
 }
 
-// Validación de reserva existente
+// Valida si ya tiene una reserva para el desayuno en la fecha especificada
 async function validarReservaExistente(habitacion, nombre, apellido, fecha) {
     try {
-        const reserva = await Reserva.findOne({ habitacion, nombre, apellido, fecha });
+        const reserva = await Reserva.findOne({
+            habitacion,
+            nombre: sanitizarTexto(nombre),
+            apellido: sanitizarTexto(apellido),
+            fecha
+        });
+
         return reserva;
     } catch (error) {
+        console.log("Error al validar la reserva", error);
         return null;
     }
 }
@@ -73,25 +94,7 @@ async function validarDisponibilidad(req, res) {
     }
 }
 
-// Función para validar huésped con la API de Cloudbeds
-async function validarHuespedCB(habitacion, nombre, apellido) {
-    console.log(process.env.CLOUDBEDS_API_TOKEN);
-    try {
-        const response = await axios.get(`https://api.cloudbeds.com/v1/room/${habitacion}`, {
-            headers: { 'Authorization': `Bearer ${process.env.CLOUDBEDS_API_TOKEN}` }
-        });
-        const huespedes = response.data.huespedes;
-        console.log('Huespedes: ', huespedes)
-
-        return huespedes.some(huesped => huesped.nombre === nombre && huesped.apellido === apellido);
-    } catch (error) {
-        console.error('Error al validar huésped con Cloudbeds:', error);
-        return false;
-    }
-}
-
 module.exports = {
-    validarHuespedCB,
     validarHuesped,
     validarReservaExistente,
     validarDisponibilidad

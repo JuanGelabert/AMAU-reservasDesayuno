@@ -74,8 +74,8 @@ function ReservaForm() {
 
         const data = {
             habitacion: values.habitacion,
-            nombre: sanitizarTexto(values.nombre),
-            apellido: sanitizarTexto(values.apellido),
+            nombre: values.nombre,
+            apellido: values.apellido,
             fecha: values.fecha,
             turno: values.turno,
             menu: selectedMenus.join(", "),
@@ -193,7 +193,7 @@ function ReservaForm() {
                         <Form className="space-y-4">
                             <div>
                                 <label className="block font-semibold text-gray-700">{traducciones.habitacion}:</label>
-                                <Field type="number" name="habitacion" className="w-full p-2 border rounded" />
+                                <Field type="text" name="habitacion" className="w-full p-2 border rounded" />
                                 <ErrorMessage name="habitacion" component="div" className="text-red-500" />
                             </div>
                             <div>

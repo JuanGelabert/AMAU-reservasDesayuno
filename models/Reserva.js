@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const ReservaSchema = new mongoose.Schema({
-    habitacion: { type: Number, required: true },
+    habitacion: { type: String, required: true },
     nombre: { type: String, required: true },
     apellido: { type: String, required: true },
     fecha: { type: Date, required: true },

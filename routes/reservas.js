@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
-const { crearReserva, modificarReserva, consultarReserva, reservarGrupo, generarReporte } = require('../controllers/reservasController');
+const { crearReserva, modificarReserva, consultarReserva } = require('../controllers/reservasController');
+const { reservarGrupo, generarReporte }  = require('../controllers/adminController');
 const { validarDisponibilidad } = require('../services/validaciones');
 const router = express.Router();
 let bloqueo = { bloquear: false }
