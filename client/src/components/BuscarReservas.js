@@ -58,7 +58,7 @@ function BuscarReservas() {
       <form onSubmit={handleBuscar} className="space-y-2">
         <div>
           <label className="block font-semibold text-gray-700">Habitación:</label>
-          <input type="number" value={habitacion} onChange={handleChangeHabitacion} className="w-full p-2 border rounded" />
+          <input type="text" value={habitacion} onChange={handleChangeHabitacion} className="w-full p-2 border rounded" />
         </div>
         <div>
           <label className="block font-semibold text-gray-700">Fecha:</label>
