@@ -54,8 +54,8 @@ exports.reservarGrupo = async (req, res) => {
         // Agregar la reserva diaria al array
         reservasDiarias.push({
           habitacion: row.Habitacion,
-          nombre: sanitizarTexto(row.Nombre),
-          apellido: sanitizarTexto(row.Apellido),
+          nombre: capitalizar(sanitizarTexto(row.Nombre)),
+          apellido: capitalizar(sanitizarTexto(row.Apellido)),
           fecha: fechaDesayuno,
           turno: row.Turno,
           menu: menu,
@@ -177,3 +177,8 @@ function propagarValoresCombinados(data) {
     return row;
   });
 }
+
+// Capitaliza la primera letra de cada palabra
+const capitalizar = (cadena) => {
+  return cadena.split(' ').map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase()).join(' ');
+};

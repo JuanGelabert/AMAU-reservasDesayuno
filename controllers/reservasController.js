@@ -6,12 +6,6 @@ const { validarHuesped, validarReservaExistente } = require('../services/validac
  * @param {string} str - El texto a sanitizar.
  * @returns {string} - El texto sanitizado.
  */
-const sanitizarTexto = (str) => {
-  return str
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-};
 
 // Crear una nueva reserva
 exports.crearReserva = async (req, res) => {
@@ -38,8 +32,8 @@ exports.crearReserva = async (req, res) => {
     // Si no tiene reserva para la fecha crea una nueva reserva
     const result = await Reserva.updateOne({
         habitacion: habitacion,
-        nombre: nombre,
-        apellido: apellido,
+        nombre: capitalizar(nombre),
+        apellido: capitalizar(apellido),
         fecha
       },
       { $set: { turno, menu, comentarios } },
@@ -99,4 +93,16 @@ exports.consultarReserva = async (req, res) => {
     console.error('Error al obtener reservas:', error);
     res.status(500).send('Error al obtener reservas');
   }
+};
+
+const sanitizarTexto = (str) => {
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+};
+
+// Capitaliza la primera letra de cada palabra
+const capitalizar = (cadena) => {
+  return cadena.split(' ').map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase()).join(' ');
 };
