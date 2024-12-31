@@ -10,6 +10,7 @@ const ReservaSchema = new mongoose.Schema({
     comentarios: { type: String }
 });
 
-const Reserva = mongoose.model('Reserva', ReservaSchema);
+// Crear un índice único para evitar duplicados
+ReservaSchema.index({ habitacion: 1, nombre: 1, apellido: 1, fecha: 1, turno: 1 }, { unique: true });
 
-module.exports = Reserva;
+module.exports = mongoose.model('Reserva', ReservaSchema);

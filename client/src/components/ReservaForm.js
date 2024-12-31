@@ -164,7 +164,7 @@ function ReservaForm() {
                 <p>
                     {traducciones.instrucciones}<br />
                     {traducciones.intervalos}
-    cd            </p>
+                </p>
                 <br />
                 <ul>
                     <li><strong>{traducciones.semana}</strong> 7:00 | 8:00 | 9:00 am</li>

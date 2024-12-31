@@ -72,7 +72,7 @@ async function validarHuesped(habitacion, nombre, apellido, fechaDesayuno) {
   }
 }
 
-// Valida si ya tiene una reserva para el desayuno en la fecha especificada
+// Valida si ya tiene una reserva para el desayuno en la fecha especificada y devuelve la reserva
 async function validarReservaExistente(habitacion, nombre, apellido, fecha) {
     try {
         const reserva = await Reserva.findOne({

@@ -34,6 +34,7 @@ exports.reservarGrupo = async (req, res) => {
 
       // Crear un array para almacenar todas las reservas diarias
       const reservasDiarias = [];
+      const duplicados = [];
 
       for (let fecha = new Date(ingreso); fecha <= salida; fecha.setDate(fecha.getDate() + 1)) {
         const fechaDesayuno = new Date(fecha);
@@ -48,6 +49,15 @@ exports.reservarGrupo = async (req, res) => {
         const reservaExistente = await validarReservaExistente(row.Habitacion, row.Nombre, row.Apellido, fechaDesayuno);
         if (reservaExistente) {
           console.log(`Ya existe una reserva para el huésped ${row.Nombre} ${row.Apellido} en la fecha ${fechaDesayuno}`);
+          duplicados.push({
+            habitacion: row.Habitacion,
+            nombre: capitalizar(sanitizarTexto(row.Nombre)),
+            apellido: capitalizar(sanitizarTexto(row.Apellido)),
+            fecha: fechaDesayuno,
+            turno: row.Turno,
+            menu: menu,
+            comentarios: row.Comentarios || ''
+          });
           continue;
         }
 
@@ -63,17 +73,35 @@ exports.reservarGrupo = async (req, res) => {
         });
       }
 
-      return reservasDiarias;
+      return { reservasDiarias, duplicados };
     }));
 
-    const reservas = reservasDias.flat().filter(reserva => reserva);
+    const reservas = reservasDias.flatMap(result => result.reservasDiarias);
+    const duplicados = reservasDias.flatMap(result => result.duplicados);
+
+    if (duplicados.length > 0) {
+      // Mostrar alerta de duplicados
+      return res.status(400).json({ message: 'Se encontraron reservas duplicadas', duplicados });
+    }
 
     if (reservas.length > 0) {
-      await Reserva.insertMany(reservas);
+      try {
+        await Reserva.insertMany(reservas, { ordered: false });
+      } catch (error) {
+        if (error.code === 11000) {
+          console.error('Error de duplicado al insertar reservas:', error);
+          fs.unlinkSync(filePath); // Eliminar el archivo después de procesarlo
+          return res.status(400).json({ message: 'Se encontraron reservas duplicadas durante la inserción', error });
+        } else {
+          throw error;
+        }
+      }
+      fs.unlinkSync(filePath); // Eliminar el archivo después de procesarlo
+      return res.status(200).json({ message: 'Reservas creadas exitosamente' });
     }
 
     fs.unlinkSync(filePath); // Eliminar el archivo después de procesarlo
-    res.status(200).json({ message: 'Reservas creadas exitosamente' });
+    res.status(200).json({ message: 'No se encontraron reservas para crear' });
 
   } catch (error) {
     console.error('Error al procesar archivo:', error);
@@ -162,7 +190,9 @@ exports.generarReporte = async (req, res) => {
 /** Procesamiento del Excel */
 // Función para convertir fechas de Excel a objetos Date
 function convertirFechaExcel(fechaExcel) {
-  return new Date((fechaExcel - 25569) * 86400 * 1000);
+  const date = new Date((fechaExcel - 25569) * 86400 * 1000);
+  date.setUTCHours(0, 0, 0, 0); // Asegurarse de que la hora sea 00:00:00
+  return date;
 }
 
 // Propagar valores de celdas combinadas para asegurarse de que cada fila tenga el valor correcto de la celda combinada.
