@@ -1,5 +1,5 @@
 const Reserva = require('../models/Reserva');
-const { validarHuesped, validarReservaExistente } = require('../services/validaciones');
+const { validarHuesped, validarReservaExistente, sanitizarTexto } = require('../services/validaciones');
 
 /**
  * Sanitiza un texto eliminando diacríticos y convirtiéndolo a minúsculas.
@@ -93,13 +93,6 @@ exports.consultarReserva = async (req, res) => {
     console.error('Error al obtener reservas:', error);
     res.status(500).send('Error al obtener reservas');
   }
-};
-
-const sanitizarTexto = (str) => {
-  return str
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
 };
 
 // Capitaliza la primera letra de cada palabra

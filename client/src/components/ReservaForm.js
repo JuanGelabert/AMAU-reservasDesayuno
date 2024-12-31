@@ -5,13 +5,6 @@ import * as Yup from 'yup';
 import Swal from 'sweetalert2';
 import { getTranslation } from '../i18n/i18n'
 
-const sanitizarTexto = (str) => {
-    return str
-        .normalize("NFD") // Normalizar para separar diacríticos 
-        .replace(/[\u0300-\u036f]/g, "") // Remover diacriticos 
-        .toLowerCase(); // Convertir a minuscula
-}
-
 const detectarIdiomaNavegador = () => {
     const lang = navigator.language || navigator.userLanguage
     return lang.substring(0, 2)
@@ -155,7 +148,7 @@ function ReservaForm() {
     };
 
     if (bloquear) {
-        return <p className="text-red-500 text-center font-bold text-lg">El sistema de reservas está actualmente bloqueado.</p>;
+        return <p className="text-red-500 text-center font-bold text-lg">{traducciones.bloqueo}</p>;
     }
 
     const sortedHorarios = Object.keys(disponibilidad).sort((a, b) => {
@@ -167,19 +160,19 @@ function ReservaForm() {
     return (
         <>
             <div className='text-center'>
-                <h2 className='font-semibold text-lg mb-4'>¡Bienvenidos al Hotel AMAU!</h2>
+                <h2 className='font-semibold text-lg mb-4'>{traducciones.bienvenida}</h2>
                 <p>
-                    Asegúrese de completar el siguiente formulario para reservar el turno de los desayunos durante su estadía.<br />
-                    Recuerde que el servicio se brinda en intervalos de 45 minutos y los horarios son los siguientes:
-                </p>
+                    {traducciones.instrucciones}<br />
+                    {traducciones.intervalos}
+    cd            </p>
                 <br />
                 <ul>
-                    <li><strong>Lunes a Viernes:</strong> 7:00 | 8:00 | 9:00 am</li>
-                    <li><strong>Sábados y Domingos:</strong> 8:00 | 9:00 | 10:00 am</li>
+                    <li><strong>{traducciones.semana}</strong> 7:00 | 8:00 | 9:00 am</li>
+                    <li><strong>{traducciones.findesemana}</strong> 8:00 | 9:00 | 10:00 am</li>
                 </ul>
                 <br />
-                <p>En caso de necesitar un turno extra puede solicitarlo en recepción.</p>
-                <p className='font-semibold italic'>Gracias por elegirnos, ¡esperamos que disfrute de su estadía!</p>
+                <p>{traducciones.desayuno_extra}</p>
+                <p className='font-semibold italic'>{traducciones.gracias}</p>
             </div>
             <div className="max-w-md mx-auto mt-5 p-6 bg-[#FAFAFA] rounded-lg shadow-md">
                 <h2 className="text-2xl text-center font-bold mb-4">{traducciones.titulo}</h2>
@@ -216,7 +209,7 @@ function ReservaForm() {
                                 <Field as="select" name="turno" className="w-full p-2 border rounded">
                                     {values.fecha && sortedHorarios.map(horario => (
                                         <option key={horario} value={horario} disabled={disponibilidad[horario] <= 0}>
-                                            {horario} ({disponibilidad[horario]} disponibles)
+                                            {horario} ({disponibilidad[horario]} {traducciones.disponible})
                                         </option>
                                     ))}
                                 </Field>
