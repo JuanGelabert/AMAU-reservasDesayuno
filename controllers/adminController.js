@@ -54,7 +54,7 @@ exports.reservarGrupo = async (req, res) => {
             nombre: capitalizar(sanitizarTexto(row.Nombre)),
             apellido: capitalizar(sanitizarTexto(row.Apellido)),
             fecha: fechaDesayuno,
-            turno: row.Turno,
+            turno: `${row.Turno}:00`,
             menu: menu,
             comentarios: row.Comentarios || ''
           });
@@ -67,7 +67,7 @@ exports.reservarGrupo = async (req, res) => {
           nombre: capitalizar(sanitizarTexto(row.Nombre)),
           apellido: capitalizar(sanitizarTexto(row.Apellido)),
           fecha: fechaDesayuno,
-          turno: row.Turno,
+          turno: `${row.Turno}:00`,
           menu: menu,
           comentarios: row.Comentarios || ''
         });

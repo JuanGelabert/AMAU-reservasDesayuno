@@ -54,7 +54,12 @@ const ReporteDiario = () => {
         const turnosArray = Object.keys(turnosAgrupados).map(turno => ({
           turno,
           reservas: turnosAgrupados[turno]
-        }));
+        }))
+        .sort((a, b) => {
+          const horaA = parseInt(a.turno.split(':')[0], 10);
+          const horaB = parseInt(b.turno.split(':')[0], 10);
+          return horaA - horaB;
+        });
 
         setTurnos(turnosArray);
       })
